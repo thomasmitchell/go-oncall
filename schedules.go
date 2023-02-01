@@ -16,6 +16,7 @@ type Schedule struct {
 	TimeZone         *time.Location
 	ICalOverridesURL string
 	Slack            ScheduleSlackMetadata
+	OnCallNow        []string
 	Calendar         ScheduleCalendar
 }
 
@@ -26,6 +27,7 @@ type scheduleRawHeaders struct {
 	TimeZone         string                `json:"time_zone"`
 	ICalURLOverrides string                `json:"ical_url_overrides"`
 	Slack            ScheduleSlackMetadata `json:"slack"`
+	OnCallNow        []string              `json:"on_call_now"`
 	Type             string                `json:"type"`
 }
 
@@ -62,6 +64,9 @@ func (s *Schedule) MarshalJSON() ([]byte, error) {
 	if s.TimeZone != nil {
 		out["time_zone"] = s.TimeZone.String()
 	}
+	if s.OnCallNow != nil {
+		out["on_call_now"] = s.OnCallNow
+	}
 	out["slack"] = s.Slack
 
 	return json.Marshal(&out)
@@ -80,6 +85,7 @@ func (s *Schedule) UnmarshalJSON(b []byte) error {
 		TeamID:           rawHeaders.TeamID,
 		ICalOverridesURL: rawHeaders.ICalURLOverrides,
 		Slack:            rawHeaders.Slack,
+		OnCallNow:        rawHeaders.OnCallNow,
 	}
 
 	s.TimeZone, err = time.LoadLocation(rawHeaders.TimeZone)
