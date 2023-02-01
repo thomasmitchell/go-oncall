@@ -2,7 +2,6 @@ package oncall
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -69,15 +68,11 @@ func (s *Schedule) MarshalJSON() ([]byte, error) {
 }
 
 func (s *Schedule) UnmarshalJSON(b []byte) error {
-
-	fmt.Println("ONE")
 	rawHeaders := scheduleRawHeaders{}
 	err := json.Unmarshal(b, &rawHeaders)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("TWO")
 
 	*s = Schedule{
 		ID:               rawHeaders.ID,
@@ -92,8 +87,6 @@ func (s *Schedule) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	fmt.Println("THREE")
-
 	cal := scheduleCalendarFromString(rawHeaders.Type)
 	if cal != nil {
 		err = json.Unmarshal(b, cal)
@@ -102,7 +95,6 @@ func (s *Schedule) UnmarshalJSON(b []byte) error {
 		}
 	}
 
-	fmt.Println("FOUR")
 	s.Calendar = cal
 	return nil
 }
