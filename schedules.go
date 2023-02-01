@@ -2,6 +2,7 @@ package oncall
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -68,11 +69,15 @@ func (s *Schedule) MarshalJSON() ([]byte, error) {
 }
 
 func (s *Schedule) UnmarshalJSON(b []byte) error {
+
+	fmt.Println("ONE")
 	rawHeaders := scheduleRawHeaders{}
 	err := json.Unmarshal(b, &rawHeaders)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("TWO")
 
 	*s = Schedule{
 		ID:               rawHeaders.ID,
@@ -87,14 +92,17 @@ func (s *Schedule) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	cal, knownType := scheduleCalendarTypeLookup[strings.ToLower(rawHeaders.Type)]
-	if knownType {
-		err = json.Unmarshal(b, &cal)
+	fmt.Println("THREE")
+
+	cal := scheduleCalendarFromString(rawHeaders.Type)
+	if cal != nil {
+		err = json.Unmarshal(b, cal)
 		if err != nil {
 			return err
 		}
 	}
 
+	fmt.Println("FOUR")
 	s.Calendar = cal
 	return nil
 }
@@ -121,10 +129,17 @@ var scheduleCalendarTypeStringLookup = [scheduleCalendarTypeLen]string{
 	"calendar",
 }
 
-var scheduleCalendarTypeLookup = map[string]ScheduleCalendar{
-	"web":      ScheduleCalendarWeb{},
-	"ical":     ScheduleCalendarICal{},
-	"calendar": ScheduleCalendarAPI{},
+func scheduleCalendarFromString(s string) ScheduleCalendar {
+	switch strings.ToLower(s) {
+	case "web":
+		return &ScheduleCalendarWeb{}
+	case "ical":
+		return &ScheduleCalendarICal{}
+	case "calendar":
+		return &ScheduleCalendarAPI{}
+	}
+
+	return nil
 }
 
 func (s ScheduleCalendarType) String() string {
@@ -143,7 +158,7 @@ type ScheduleCalendarWeb struct {
 	Shifts []string `json:"shifts"`
 }
 
-func (s ScheduleCalendarWeb) ScheduleCalendarType() ScheduleCalendarType {
+func (s *ScheduleCalendarWeb) ScheduleCalendarType() ScheduleCalendarType {
 	return ScheduleCalendarTypeWeb
 }
 
@@ -151,7 +166,7 @@ type ScheduleCalendarICal struct {
 	PrimaryURL string `json:"ical_url_primary"`
 }
 
-func (s ScheduleCalendarICal) ScheduleCalendarType() ScheduleCalendarType {
+func (s *ScheduleCalendarICal) ScheduleCalendarType() ScheduleCalendarType {
 	return ScheduleCalendarTypeICal
 }
 
@@ -159,7 +174,7 @@ type ScheduleCalendarAPI struct {
 	Shifts []string `json:"shifts"`
 }
 
-func (s ScheduleCalendarAPI) ScheduleCalendarType() ScheduleCalendarType {
+func (s *ScheduleCalendarAPI) ScheduleCalendarType() ScheduleCalendarType {
 	return ScheduleCalendarTypeAPI
 }
 

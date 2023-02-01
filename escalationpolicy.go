@@ -65,9 +65,9 @@ func (e *EscalationPolicy) UnmarshalJSON(b []byte) error {
 		Position:          rawHeaders.Position,
 	}
 
-	rule, knownType := escalationPolicyTypeLookup[strings.ToLower(rawHeaders.Type)]
-	if knownType {
-		err = json.Unmarshal(b, &rule)
+	rule := escalationPolicyRuleFromString(rawHeaders.Type)
+	if rule != nil {
+		err = json.Unmarshal(b, rule)
 		if err != nil {
 			return err
 		}
@@ -119,16 +119,29 @@ var escalationPolicyTypeStringLookup = [escalationPolicyTypeLen]string{
 	"notify_if_time_from_to",
 }
 
-var escalationPolicyTypeLookup = map[string]EscalationPolicyRule{
-	"wait":                         EscalationPolicyRuleWait{},
-	"notify_persons":               EscalationPolicyRuleNotifyPersons{},
-	"notify_person_next_each_time": EscalationPolicyRuleNotifyPersonNextEachTime{},
-	"notify_on_call_from_schedule": EscalationPolicyRuleNotifyOnCallFromSchedule{},
-	"notify_user_group":            EscalationPolicyRuleNotifyUserGroup{},
-	"trigger_action":               EscalationPolicyRuleTriggerAction{},
-	"resolve":                      EscalationPolicyRuleResolve{},
-	"notify_whole_channel":         EscalationPolicyRuleNotifyWholeChannel{},
-	"notify_if_time_from_to":       EscalationPolicyRuleNotifyIfTimeFromTo{},
+func escalationPolicyRuleFromString(s string) EscalationPolicyRule {
+	switch strings.ToLower(s) {
+	case "wait":
+		return &EscalationPolicyRuleWait{}
+	case "notify_persons":
+		return &EscalationPolicyRuleNotifyPersons{}
+	case "notify_person_next_each_time":
+		return &EscalationPolicyRuleNotifyPersonNextEachTime{}
+	case "notify_on_call_from_schedule":
+		return &EscalationPolicyRuleNotifyOnCallFromSchedule{}
+	case "notify_user_group":
+		return &EscalationPolicyRuleNotifyUserGroup{}
+	case "trigger_action":
+		return &EscalationPolicyRuleTriggerAction{}
+	case "resolve":
+		return &EscalationPolicyRuleResolve{}
+	case "notify_whole_channel":
+		return &EscalationPolicyRuleNotifyWholeChannel{}
+	case "notify_if_time_from_to":
+		return &EscalationPolicyRuleNotifyIfTimeFromTo{}
+	}
+
+	return nil
 }
 
 type EscalationPolicyRule interface {
@@ -139,7 +152,7 @@ type EscalationPolicyRuleWait struct {
 	Duration time.Duration `json:"duration"`
 }
 
-func (e EscalationPolicyRuleWait) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleWait) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeWait
 }
 
@@ -148,7 +161,7 @@ type EscalationPolicyRuleNotifyPersons struct {
 	UserIDs   []string `json:"persons_to_notify"`
 }
 
-func (e EscalationPolicyRuleNotifyPersons) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleNotifyPersons) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeNotifyPersons
 }
 
@@ -156,7 +169,7 @@ type EscalationPolicyRuleNotifyPersonNextEachTime struct {
 	UserIDs []string `json:"persons_to_notify_next_each_time"`
 }
 
-func (e EscalationPolicyRuleNotifyPersonNextEachTime) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleNotifyPersonNextEachTime) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeNotifyPersonNextEachTime
 }
 
@@ -165,7 +178,7 @@ type EscalationPolicyRuleNotifyOnCallFromSchedule struct {
 	ScheduleID string `json:"notify_on_call_from_schedule"`
 }
 
-func (e EscalationPolicyRuleNotifyOnCallFromSchedule) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleNotifyOnCallFromSchedule) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeNotifyOnCallFromSchedule
 }
 
@@ -174,7 +187,7 @@ type EscalationPolicyRuleNotifyUserGroup struct {
 	UserGroupID string `json:"group_to_notify"`
 }
 
-func (e EscalationPolicyRuleNotifyUserGroup) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleNotifyUserGroup) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeNotifyUserGroup
 }
 
@@ -182,19 +195,19 @@ type EscalationPolicyRuleTriggerAction struct {
 	ActionID string `json:"action_to_trigger"`
 }
 
-func (e EscalationPolicyRuleTriggerAction) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleTriggerAction) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeTriggerAction
 }
 
 type EscalationPolicyRuleResolve struct{}
 
-func (e EscalationPolicyRuleResolve) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleResolve) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeResolve
 }
 
 type EscalationPolicyRuleNotifyWholeChannel struct{}
 
-func (e EscalationPolicyRuleNotifyWholeChannel) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleNotifyWholeChannel) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeNotifyWholeChannel
 }
 
@@ -210,7 +223,7 @@ type escalationPolicyRuleNotifyIfTimeFromToRaw struct {
 	To   string `json:"notify_if_time_to"`
 }
 
-func (e EscalationPolicyRuleNotifyIfTimeFromTo) EscalationPolicyType() EscalationPolicyType {
+func (e *EscalationPolicyRuleNotifyIfTimeFromTo) EscalationPolicyType() EscalationPolicyType {
 	return EscalationPolicyTypeNotifyIfTimeFromTo
 }
 
