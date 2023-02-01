@@ -110,18 +110,21 @@ const (
 	ScheduleCalendarTypeUnknown ScheduleCalendarType = iota
 	ScheduleCalendarTypeWeb
 	ScheduleCalendarTypeICal
+	ScheduleCalendarTypeAPI
 	scheduleCalendarTypeLen
 )
 
 var scheduleCalendarTypeStringLookup = [scheduleCalendarTypeLen]string{
 	"unknown",
-	"calendar",
+	"web",
 	"ical",
+	"calendar",
 }
 
 var scheduleCalendarTypeLookup = map[string]ScheduleCalendar{
-	"calendar": ScheduleCalendarWeb{},
+	"web":      ScheduleCalendarWeb{},
 	"ical":     ScheduleCalendarICal{},
+	"calendar": ScheduleCalendarAPI{},
 }
 
 func (s ScheduleCalendarType) String() string {
@@ -150,6 +153,14 @@ type ScheduleCalendarICal struct {
 
 func (s ScheduleCalendarICal) ScheduleCalendarType() ScheduleCalendarType {
 	return ScheduleCalendarTypeICal
+}
+
+type ScheduleCalendarAPI struct {
+	Shifts []string `json:"shifts"`
+}
+
+func (s ScheduleCalendarAPI) ScheduleCalendarType() ScheduleCalendarType {
+	return ScheduleCalendarTypeAPI
 }
 
 type CreateScheduleOptions struct {
